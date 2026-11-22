@@ -22,6 +22,8 @@ function smarty_block_dropdown_menu($params,$content,$template,&$repeat){
 		"clearfix" => null, // null, true, false
 		"class" => "",
 
+		"iconify" => false, 
+
 		"USING_BOOTSTRAP4" => defined("USING_BOOTSTRAP4") && USING_BOOTSTRAP4,
 	);
 
@@ -46,19 +48,22 @@ function smarty_block_dropdown_menu($params,$content,$template,&$repeat){
 		if(!strlen($line)){ continue; }
 
 		if(!$first_line){
+			if(!$params["iconify"]){
 			if($USING_BOOTSTRAP4){
 				$line = _smarty_block_dropdown_menu_add_class_to_line($line,"btn btn-outline-primary btn-sm");
 			}else{
 				$line = _smarty_block_dropdown_menu_add_class_to_line($line,"btn btn-default");
 			}
+			}
 			$first_line = $line;
+			$first_line = new _DropdownMenuLink($first_line);
 			continue;
 		}
 
-		if($USING_BOOTSTRAP4){
+		if($USING_BOOTSTRAP4 && !$params["iconify"]){
 			$line = _smarty_block_dropdown_menu_add_class_to_line($line,"dropdown-item");
 		}
-		$lines[] = $line;
+		$lines[] = new _DropdownMenuLink($line);
 	}
 
 	if(!strlen($first_line)){
@@ -73,7 +78,7 @@ function smarty_block_dropdown_menu($params,$content,$template,&$repeat){
 	$smarty->assign("clearfix",$params["clearfix"]);
 	$smarty->assign("class",$params["class"]);
 	$smarty->assign("USING_BOOTSTRAP4",$USING_BOOTSTRAP4);
-	$template_name = "shared/helpers/_dropdown_menu.tpl";
+	$template_name = $params["iconify"] ? "shared/helpers/_dropdown_menu_iconified.tpl" : "shared/helpers/_dropdown_menu.tpl";
 	$out = $smarty->fetch($template_name);
 	$smarty->clearAllAssign();
 	$smarty->assign($original_smarty_vars);
@@ -97,3 +102,44 @@ function _smarty_block_dropdown_menu_add_class_to_line($line,$class){
 	}
 	return $line;
 }
+
+
+class _DropdownMenuLink {
+
+	protected $line;
+	protected $url;
+	protected $icon;
+	protected $text;
+	protected $opening_tag;
+	protected $closing_tag;
+
+	function __construct($line){
+		$this->url = "";
+		$this->icon = smarty_modifier_icon("question-mark");
+		$this->text = "???";
+		$this->opening_tag = "<a>";
+		$this->closing_tag = "</a>";
+		if(preg_match('/(?<opening_tag><a\b.*?\bhref="(?<url>[^\s>]*?)".*?>)\s*(?<icon>(<[^>]*?>\s*(<[^>]*?>|)|))\s*(?<text>.*)\s*(?<closing_tag><\/a>)/is',trim($line),$matches)){
+			$this->url = $matches["url"];
+			strlen($matches["icon"]) && ($this->icon = $matches["icon"]);
+			$this->text = $matches["text"];
+			$this->opening_tag = $matches["opening_tag"];
+			$this->closing_tag = $matches["closing_tag"];
+		}
+
+		$this->line = $line;
+	}
+
+	function getUrl(){ return $this->url; }
+	function getIcon(){ return $this->icon; }
+	function getText(){ return $this->text; }
+	function getOpeningTag(){ return $this->opening_tag; }
+	function getClosingTag(){ return $this->closing_tag; }
+
+	function __toString(){
+		return (string)$this->line;
+	}
+}
+
+Atk14Require::Helper("modifier.icon");
+
