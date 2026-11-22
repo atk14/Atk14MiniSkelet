@@ -25,7 +25,8 @@ function smarty_block_button_create_new($params,$content,$template,&$repeat){
 	$params += array(
 		"action" => "create_new",
 		"return_to_anchor" => "",
-		"icon" => USING_FONTAWESOME ? "plus-circle" : "plus", 
+		"icon" => USING_FONTAWESOME ? "plus-circle" : "plus",
+		"remote" => false,
 	);
 
 	$return_to_anchor = $params["return_to_anchor"];
@@ -35,7 +36,11 @@ function smarty_block_button_create_new($params,$content,$template,&$repeat){
 	$icon = $params["icon"];
 	unset($params["icon"]);
 
-	$attrs = array();
+	$remote = $params["remote"];
+	unset($params["remote"]);
+
+	$attrs = [];
+	$attrs["href"] = ""; // will be set later
 	foreach($params as $k => $v){
 		if(preg_match('/^_(.*)/',$k,$m)){
 			$attrs[$m[1]] = $v;
@@ -59,13 +64,20 @@ function smarty_block_button_create_new($params,$content,$template,&$repeat){
 		"class" => USING_BOOTSTRAP3 ? "btn btn-default" : "btn btn-outline-primary",
 	);
 
+	$attrs["href"] = Atk14Url::BuildLink($params);
+
+	if($remote){
+		$attrs["data-remote"] = "true";
+		$attrs["data-href"] = $attrs["href"];
+		$attrs["href"] = "#";
+	}
+
 	$original_smarty_vars = $smarty->getTemplateVars();
 	$smarty->assign("title",$content);
 	if($return_to_anchor){
 		$return_uri = $request->getUri()."#".$return_to_anchor;
 		$params["_return_uri_"] = $return_uri; // see ApplicationBaseController::_redirect_back()
 	}
-	$smarty->assign("create_new_url",Atk14Url::BuildLink($params));
 	$smarty->assign("attrs",$attrs);
 	$smarty->assign("icon",$icon);
 	$out = $smarty->fetch("shared/helpers/_button_create_new.tpl");
