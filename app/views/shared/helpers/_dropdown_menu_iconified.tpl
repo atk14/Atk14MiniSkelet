@@ -1,4 +1,4 @@
-<div class="action-icons{if $class} {$class}{/if}">
+<div{if $class} class="{$class}"{/if}">
 	{if $link_on_first_line}
 		{render partial="shared/helpers/dropdown_menu/iconified/line_item" line=$first_line}
 	{/if}

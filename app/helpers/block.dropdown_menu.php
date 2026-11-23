@@ -17,15 +17,26 @@
 function smarty_block_dropdown_menu($params,$content,$template,&$repeat){
 	if($repeat){ return; }
 
-	$params += array(
+	$params += [
+		"iconify" => false,
+	];
+
+	if(USING_BOOTSTRAP3){
+		$class_default_iconify = "pull-right";
+	}elseif(USING_BOOTSTRAP4){
+		$class_default_iconify = "float-right";
+	}else{
+		// Bootstrap 5, ...
+		$class_default_iconify = "float-end";
+	}
+
+	$params += [
 		"pull" => "right", // "right", "left", ""
 		"clearfix" => null, // null, true, false
-		"class" => "",
-
-		"iconify" => false, 
+		"class" => $params["iconify"] ? $class_default_iconify : "",
 
 		"USING_BOOTSTRAP4" => defined("USING_BOOTSTRAP4") && USING_BOOTSTRAP4,
-	);
+	];
 
 	if(!isset($params["clearfix"])){
 		$params["clearfix"] = $params["pull"]=="right";
@@ -41,7 +52,7 @@ function smarty_block_dropdown_menu($params,$content,$template,&$repeat){
 	$content = str_replace("%a_begin%","<a",$content);
 	$content = str_replace("%a_end%","</a>",$content);
 
-	$lines = array();
+	$lines = [];
 	$first_line = "";
 	foreach(explode('%SEPARATOR%',$content) as $line){
 		$line = trim($line);
