@@ -41,7 +41,7 @@ class InvalidPasswordAttempt extends ApplicationModel {
 
 		if(!is_null($options["object_key"])){
 			$conditions[] = "object_key=:object_key";
-			$bind_ar[":object_key"] = (string)$object_key;
+			$bind_ar[":object_key"] = (string)$options["object_key"];
 		}
 
 		// Load all attempts within the lookback window to determine the penalty round
